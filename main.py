@@ -11,11 +11,12 @@ pd.set_option('max_colwidth', -1)
 
 dataset_path = Path.cwd() / "data" / "Reviews.csv"
 if __name__ == '__main__':
-    dataset = pd.read_csv(dataset_path, nrows=20)
+    dataset = pd.read_csv(dataset_path, nrows=100)
     dataset.drop_duplicates(subset=['Text'], inplace=True)
     dataset.dropna(axis=0, inplace=True)
 
     sentences_list = split_in_sentences(dataset['Text'])
+    sentences_list = remove_html_tag(sentences_list)
 
     pre_processed_sentences = pre_processing(sentences_list)
 

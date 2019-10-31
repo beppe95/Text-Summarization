@@ -53,7 +53,6 @@ def pre_processing(sentences: list) -> list:
     :return:
     """
     processed_sentences = pd.Series(sentences).replace("[^a-zA-Z]", " ")
-    processed_sentences = remove_html_tag(processed_sentences)
     processed_sentences = [sentence.lower() for sentence in processed_sentences]
     return [remove_stopwords(p_sent.split()) for p_sent in processed_sentences]
 
