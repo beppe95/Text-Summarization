@@ -2,7 +2,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from utils import split_in_sentences, pre_processing, get_word_embeddings, ask_embedding_dim, \
+from utils import split_in_sentences, remove_html_tag, pre_processing, get_word_embeddings, ask_embedding_dim, \
     make_sentences_vectors, make_similarity_matrix, apply_pagerank, ask_top_n_sentences_to_extract, extract_sentences
 
 pd.set_option('display.max_columns', None)
@@ -22,9 +22,9 @@ if __name__ == '__main__':
     embedding_dimensionality = ask_embedding_dim()
     embeddings = get_word_embeddings(embedding_dimensionality)
 
-    sents_vects = make_sentences_vectors(pre_processed_sentences, embeddings, embedding_dimensionality)
+    sents_vects = make_sentences_vectors(pre_processed_sentences, embeddings, int(embedding_dimensionality))
 
-    similarity_matrix = make_similarity_matrix(sentences_list, sents_vects)
+    similarity_matrix = make_similarity_matrix(sentences_list, sents_vects, int(embedding_dimensionality))
 
     pagerank_scores = apply_pagerank(similarity_matrix)
 

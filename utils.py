@@ -5,6 +5,7 @@ from warnings import warn
 import networkx as nx
 import numpy as np
 import pandas as pd
+from bs4 import BeautifulSoup
 from nltk.corpus import stopwords
 from nltk.tokenize import sent_tokenize
 from sklearn.metrics.pairwise import cosine_similarity
@@ -26,6 +27,15 @@ def split_in_sentences(dataset_text: pd.Series) -> list:
     return [text for sentence in sentences for text in sentence]
 
 
+def remove_html_tag(sentences: list) -> list:
+    """
+
+    :param sentences:
+    :return:
+    """
+    return [BeautifulSoup(sentence, features='html.parser').text for sentence in sentences]
+
+
 def remove_stopwords(sentences: list) -> str:
     """
 
@@ -43,6 +53,7 @@ def pre_processing(sentences: list) -> list:
     :return:
     """
     processed_sentences = pd.Series(sentences).replace("[^a-zA-Z]", " ")
+    processed_sentences = remove_html_tag(processed_sentences)
     processed_sentences = [sentence.lower() for sentence in processed_sentences]
     return [remove_stopwords(p_sent.split()) for p_sent in processed_sentences]
 
@@ -77,7 +88,7 @@ def ask_embedding_dim():
     return choice
 
 
-def make_sentences_vectors(pre_processed_sentences: list, embeddings: defaultdict, embedding_dim: str) -> list:
+def make_sentences_vectors(pre_processed_sentences: list, embeddings: defaultdict, embedding_dim: int) -> list:
     """
 
     :param pre_processed_sentences:
@@ -88,19 +99,20 @@ def make_sentences_vectors(pre_processed_sentences: list, embeddings: defaultdic
     sentences_vectors = []
     for sent in pre_processed_sentences:
         if len(sent) > 0:
-            v = sum([embeddings.get(word, np.zeros(int(embedding_dim), )) for word in sent.split()]) / (
+            v = sum([embeddings.get(word, np.zeros(embedding_dim, )) for word in sent.split()]) / (
                     len(sent.split()) + 0.001)
         else:
-            v = np.zeros(int(embedding_dim), )
+            v = np.zeros(embedding_dim, )
         sentences_vectors.append(v)
     return sentences_vectors
 
 
-def make_similarity_matrix(sentences: list, sents_vects: list) -> np.zeros:
+def make_similarity_matrix(sentences: list, sents_vects: list, embedding_dim: int) -> np.zeros:
     """
 
     :param sentences:
     :param sents_vects:
+    :param embedding_dim:
     :return:
     """
     sent_len = len(sentences)
@@ -110,8 +122,8 @@ def make_similarity_matrix(sentences: list, sents_vects: list) -> np.zeros:
     for i in range(sent_len):
         for j in range(sent_len):
             if i != j:
-                similarity_matrix[i, j] = cosine_similarity(sents_vects[i].reshape(1, 100),
-                                                            sents_vects[j].reshape(1, 100))
+                similarity_matrix[i, j] = cosine_similarity(sents_vects[i].reshape(1, embedding_dim),
+                                                            sents_vects[j].reshape(1, embedding_dim))
     return similarity_matrix
 
 
